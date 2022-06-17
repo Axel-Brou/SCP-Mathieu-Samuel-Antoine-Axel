@@ -48,7 +48,7 @@ void Update5ms(){
 
 void UpdateSensors(){
   gyro.update(); // update the gyroscope state
-  angle = gyro.getAngleZ() * (3.1415 / 180); // get the estimated heading in deg
+  angle = gyro.getAngleZ() * (3.1415 / 180); // get the estimated heading in rad
   
   Encoder_1.loop(); // update the encoders state
   Encoder_2.loop();
@@ -253,8 +253,10 @@ void readPosFromPi(){
      
       Serial.print("I received: x :");//on affiche les données traité pour le débug
       Serial.print(V1_U.x);
+      V1_U.x = cos(angle) * 100 + V1_U.x;
       Serial.print(" y:");
       Serial.print(V1_U.y_g);
+      V1_U.y_g = sin(angle) * 100 + V1_U.y_g;
       Serial.println("");
   }
  }
