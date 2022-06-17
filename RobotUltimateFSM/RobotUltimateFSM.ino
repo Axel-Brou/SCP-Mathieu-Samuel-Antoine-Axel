@@ -48,7 +48,7 @@ void Update5ms(){
 
 void UpdateSensors(){
   gyro.update(); // update the gyroscope state
-  angle = gyro.getAngleZ(); // get the estimated heading in deg
+  angle = gyro.getAngleZ() * (3.1415 / 180); // get the estimated heading in deg
   
   Encoder_1.loop(); // update the encoders state
   Encoder_2.loop();
@@ -63,7 +63,7 @@ void UpdateControl(){
   if(!emergencyStop){
 
     //Vitesse gauche 
-    V1_U.VG = speed1;
+    V1_U.VG = - speed1;
     // vitesse droite
     V1_U.VD  = speed2;
 
@@ -72,7 +72,7 @@ void UpdateControl(){
  
     V1_step();
 
-    u1 = V1_Y.Ug;
+    u1 = - V1_Y.Ug;
     u2 = V1_Y.Ud;
   }else{
     newU1 = 0;
@@ -232,32 +232,29 @@ void loop(){
   }
 }
 
+/*
+ * Read la position au format "xxxxx.xx;yyyyy.yy" envoyé sur le Serial 2 (port RX2 TX2)
+ */
 void readPosFromPi(){
-  if(Serial2.available() > 0){
-    int nbChar,sapceIndex;
+  if(Serial2.available() > 0){//on check si le port serial2 a des données
+    int nbChar,separatorIndex;
     char input[50];
     String string;
-    nbChar = Serial2.readBytesUntil('\n', input, sizeof(input) - 1);  //gets bytes until Enter pressed
+    nbChar = Serial2.readBytesUntil('\n', input, sizeof(input) - 1);  //gets bytes until end of line
     input[nbChar] = NULL;   // This makes it a string
-    string = String(input);
-    sapceIndex = string.indexOf(';');
+    string = String(input); 
+    separatorIndex = string.indexOf(';');
 
-   Serial.println(string); 
+   Serial.println(string); //on ce que l'on a reçue pour le débug
 
-      V1_U.x  = string.substring(0,sapceIndex).toFloat();//x réel
-      V1_U.y_g = string.substring(sapceIndex+1,nbChar).toFloat();//y réel
+      //on sépare le string en deux float grace au separateur
+      V1_U.x  = string.substring(0,separatorIndex).toFloat();//x réel
+      V1_U.y_g = string.substring(separatorIndex+1,nbChar).toFloat();//y réel
      
-      Serial.print("I received: x :");
+      Serial.print("I received: x :");//on affiche les données traité pour le débug
       Serial.print(V1_U.x);
       Serial.print(" y:");
       Serial.print(V1_U.y_g);
       Serial.println("");
-      /*
-      Serial.print("I received: x :");
-      Serial.print(string.substring(0,sapceIndex).toFloat());
-      Serial.print(" y:");
-      Serial.print(string.substring(sapceIndex+1,nbChar).toFloat());
-      Serial.println(""); */
-    //}
   }
  }
